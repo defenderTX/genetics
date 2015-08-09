@@ -2,6 +2,7 @@ package genes
 
 var GENE_LENGTH = 4
 
+// Converts a gene to an ascii value
 func GeneToValue(gene string) string {
 	switch gene {
 	case "0000":
