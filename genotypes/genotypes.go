@@ -28,19 +28,22 @@ func (genotype Genotype) ChromosomeToDecodedString() string {
 }
 
 func (genotype Genotype) ChromosomeToFormula() string {
-	formulaString := ""
+	validGenes := []genes.Gene{}
 	previousNumeric := false
 	for index, gene := range genotype.Chromosome {
 		if !previousNumeric && gene.IsNumeric() {
-			formulaString += gene.DecodedValue()
-			formulaString += " "
+			validGenes = append(validGenes, gene)
 			previousNumeric = true
 		}
 		if previousNumeric && gene.IsOperator() && index < len(genotype.Chromosome) {
-			formulaString += gene.DecodedValue()
-			formulaString += " "
+			validGenes = append(validGenes, gene)
 			previousNumeric = false
 		}
 	}
 	return formulaString
+}
+
+// Determines if the gene slice contains a numeric decoded value
+func containsNumeric(genes []genes.Gene) bool {
+	return false
 }

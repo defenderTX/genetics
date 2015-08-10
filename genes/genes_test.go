@@ -20,7 +20,7 @@ var (
 	multiply  = Gene{"1100"}
 	divide    = Gene{"1101"}
 	numerics  = []Gene{zero, one, two, three, four, five, six, seven, eight, nine}
-	operators = []Gene{plus, minus, divide, multiply}
+	operators = []Gene{plus, minus, multiply, divide}
 )
 
 func TestIsNumeric(t *testing.T) {
@@ -29,15 +29,11 @@ func TestIsNumeric(t *testing.T) {
 			t.Fail()
 		}
 	}
-	test := Gene{"1101"}
-	if test.IsNumeric() {
-		t.Fail()
+	for _, gene := range operators {
+		if gene.IsNumeric() {
+			t.Fail()
+		}
 	}
-	//for _, gene := range operators {
-	//	if gene.IsNumeric() {
-	//		t.Fail()
-	//	}
-	//}
 }
 
 func TestIsOperator(t *testing.T) {

@@ -50,12 +50,12 @@ func (gene Gene) DecodedValue() string {
 }
 
 func (gene Gene) IsNumeric() bool {
-	value, _ := strconv.ParseInt(gene.EncodedString, 2, 4)
-	isNumeric := value < 10
+	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
+	isNumeric := (value < 10)
 	return isNumeric
 }
 
 func (gene Gene) IsOperator() bool {
-	value, _ := strconv.ParseInt(gene.EncodedString, 2, 4)
+	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
 	return value > 9 && value < 14
 }
