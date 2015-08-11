@@ -38,9 +38,9 @@ func generateRandomGenotype() genotypes.Genotype {
 
 func PrintPopulation(population population) {
 	for _, genotype := range population.members {
-		print(genotype.ChromosomeToEncodedString(), " : ")
-		print(genotype.ChromosomeToDecodedString(), " : ")
-		println(genotype.ChromosomeToFormula())
+		print(genotype.ToEncodedString(), " : ")
+		print(genotype.ToDecodedString(), " : ")
+		println(genotype.ToFormula())
 	}
 }
 

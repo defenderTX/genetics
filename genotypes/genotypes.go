@@ -3,14 +3,18 @@ package genotypes
 import "github.com/defendertx/genetics/genes"
 
 const (
+	// ChromosomeLength is the number of Genes contained in each Chromosome
 	ChromosomeLength = 9
 )
 
+// Genotype contains a Chromosome - a list of genes that make up a potential
+// solution to a problem
 type Genotype struct {
 	Chromosome []genes.Gene
 }
 
-func (genotype Genotype) ChromosomeToEncodedString() string {
+// ToEncodedString converts the Genotype to an encoded string of bits
+func (genotype Genotype) ToEncodedString() string {
 	encodedString := ""
 	for _, gene := range genotype.Chromosome {
 		encodedString += gene.EncodedString
@@ -18,7 +22,8 @@ func (genotype Genotype) ChromosomeToEncodedString() string {
 	return encodedString
 }
 
-func (genotype Genotype) ChromosomeToDecodedString() string {
+// ToDecodedString converts the Genotype to a decoded string of values
+func (genotype Genotype) ToDecodedString() string {
 	decodedString := ""
 	for _, gene := range genotype.Chromosome {
 		decodedString += gene.DecodedValue()
@@ -27,16 +32,20 @@ func (genotype Genotype) ChromosomeToDecodedString() string {
 	return decodedString
 }
 
-func (genotype Genotype) ChromosomeToFormula() string {
-	validGenes := []genes.Gene{}
+// ToFormula converts the Genotype to a proper formula after discarding
+// nonsensical data
+func (genotype Genotype) ToFormula() string {
+	formulaString := ""
 	previousNumeric := false
 	for index, gene := range genotype.Chromosome {
 		if !previousNumeric && gene.IsNumeric() {
-			validGenes = append(validGenes, gene)
+			formulaString += gene.DecodedValue() + " "
 			previousNumeric = true
 		}
-		if previousNumeric && gene.IsOperator() && index < len(genotype.Chromosome) {
-			validGenes = append(validGenes, gene)
+		if previousNumeric && gene.IsOperator() &&
+			index < len(genotype.Chromosome)-1 &&
+			containsNumeric(genotype.Chromosome[index:]) {
+			formulaString += gene.DecodedValue() + " "
 			previousNumeric = false
 		}
 	}
@@ -45,5 +54,10 @@ func (genotype Genotype) ChromosomeToFormula() string {
 
 // Determines if the gene slice contains a numeric decoded value
 func containsNumeric(genes []genes.Gene) bool {
+	for _, gene := range genes {
+		if gene.IsNumeric() {
+			return true
+		}
+	}
 	return false
 }

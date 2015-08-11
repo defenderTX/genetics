@@ -23,12 +23,15 @@ var (
 	operators = []Gene{plus, minus, multiply, divide}
 )
 
-func TestIsNumeric(t *testing.T) {
+func TestIsNumericForNumerics(t *testing.T) {
 	for _, gene := range numerics {
 		if !gene.IsNumeric() {
 			t.Fail()
 		}
 	}
+}
+
+func TestIsNumericForOperators(t *testing.T) {
 	for _, gene := range operators {
 		if gene.IsNumeric() {
 			t.Fail()
@@ -36,12 +39,15 @@ func TestIsNumeric(t *testing.T) {
 	}
 }
 
-func TestIsOperator(t *testing.T) {
+func TestIsOperatorForNumerics(t *testing.T) {
 	for _, gene := range numerics {
 		if gene.IsOperator() {
 			t.Fail()
 		}
 	}
+}
+
+func TestIsOperatorForOperators(t *testing.T) {
 	for _, gene := range operators {
 		if !gene.IsOperator() {
 			t.Fail()
