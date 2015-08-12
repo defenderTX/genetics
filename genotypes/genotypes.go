@@ -1,6 +1,10 @@
 package genotypes
 
-import "github.com/defendertx/genetics/genes"
+import (
+	"strings"
+
+	"github.com/defendertx/genetics/genes"
+)
 
 const (
 	// ChromosomeLength is the number of Genes contained in each Chromosome
@@ -26,7 +30,7 @@ func (genotype Genotype) ToEncodedString() string {
 func (genotype Genotype) ToDecodedString() string {
 	decodedString := ""
 	for _, gene := range genotype.Chromosome {
-		decodedString += gene.DecodedValue()
+		decodedString += gene.ToDecodedValue()
 		decodedString += " "
 	}
 	return decodedString
@@ -39,17 +43,17 @@ func (genotype Genotype) ToFormula() string {
 	previousNumeric := false
 	for index, gene := range genotype.Chromosome {
 		if !previousNumeric && gene.IsNumeric() {
-			formulaString += gene.DecodedValue() + " "
+			formulaString += gene.ToDecodedValue() + " "
 			previousNumeric = true
 		}
 		if previousNumeric && gene.IsOperator() &&
 			index < len(genotype.Chromosome)-1 &&
 			containsNumeric(genotype.Chromosome[index:]) {
-			formulaString += gene.DecodedValue() + " "
+			formulaString += gene.ToDecodedValue() + " "
 			previousNumeric = false
 		}
 	}
-	return formulaString
+	return strings.TrimSpace(formulaString)
 }
 
 // Determines if the gene slice contains a numeric decoded value

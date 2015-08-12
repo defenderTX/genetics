@@ -14,7 +14,7 @@ type Gene struct {
 }
 
 // DecodedValue gets the decoded value of the gene's encoded string
-func (gene Gene) DecodedValue() string {
+func (gene Gene) ToDecodedValue() string {
 	switch gene.EncodedString {
 	case "0000":
 		return ("0")
@@ -49,12 +49,14 @@ func (gene Gene) DecodedValue() string {
 	}
 }
 
+// IsNumeric returns true if the gene is a numeric value
 func (gene Gene) IsNumeric() bool {
 	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
 	isNumeric := (value < 10)
 	return isNumeric
 }
 
+// IsOperator returns true if the gene is an operator
 func (gene Gene) IsOperator() bool {
 	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
 	return value > 9 && value < 14
