@@ -7,6 +7,7 @@ import (
 
 	"github.com/defendertx/genetics/genes"
 	"github.com/defendertx/genetics/genotypes"
+	"github.com/defendertx/genetics/parser"
 )
 
 type population struct {
@@ -41,6 +42,7 @@ func PrintPopulation(population population) {
 		print(genotype.ToEncodedString(), " : ")
 		print(genotype.ToDecodedString(), " : ")
 		println(genotype.ToFormula())
+		parser.ParseFormula(genotype.ToFormula())
 	}
 }
 
