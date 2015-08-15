@@ -42,7 +42,7 @@ func PrintPopulation(population population) {
 		print(genotype.ToEncodedString(), " : ")
 		print(genotype.ToDecodedString(), " : ")
 		print(genotype.ToFormula(), " : ")
-		println(parser.ParseFormula(genotype.ToFormula()))
+		println(parser.SolveExpression(genotype.ToFormula()))
 	}
 }
 
