@@ -41,8 +41,8 @@ func PrintPopulation(population population) {
 	for _, genotype := range population.members {
 		print(genotype.ToEncodedString(), " : ")
 		print(genotype.ToDecodedString(), " : ")
-		println(genotype.ToFormula())
-		parser.ParseFormula(genotype.ToFormula())
+		print(genotype.ToFormula(), " : ")
+		println(parser.ParseFormula(genotype.ToFormula()))
 	}
 }
 
