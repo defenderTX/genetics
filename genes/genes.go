@@ -1,9 +1,21 @@
 package genes
 
-var GENE_LENGTH = 4
+import "strconv"
 
-func GeneToValue(gene string) string {
-	switch gene {
+const (
+	// GeneLength is the number of bits that represent a gene string
+	GeneLength = 4
+)
+
+// Gene represents a single gene that has an encoded string representation
+// that corresponds to a decoded value
+type Gene struct {
+	EncodedString string
+}
+
+// DecodedValue gets the decoded value of the gene's encoded string
+func (gene Gene) ToDecodedValue() string {
+	switch gene.EncodedString {
 	case "0000":
 		return ("0")
 	case "0001":
@@ -35,4 +47,17 @@ func GeneToValue(gene string) string {
 	default:
 		return (" ")
 	}
+}
+
+// IsNumeric returns true if the gene is a numeric value
+func (gene Gene) IsNumeric() bool {
+	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
+	isNumeric := (value < 10)
+	return isNumeric
+}
+
+// IsOperator returns true if the gene is an operator
+func (gene Gene) IsOperator() bool {
+	value, _ := strconv.ParseInt(gene.EncodedString, 2, 32)
+	return value > 9 && value < 14
 }

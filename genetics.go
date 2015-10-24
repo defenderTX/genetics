@@ -6,21 +6,17 @@ import (
 	"time"
 
 	"github.com/defendertx/genetics/genes"
+	"github.com/defendertx/genetics/genotypes"
+	"github.com/defendertx/genetics/parser"
 )
 
-var CHROMOSOME_LENGTH = 9
-
-type genotype struct {
-	chromosome string
-}
-
 type population struct {
-	members     []genotype
+	members     []genotypes.Genotype
 	generations uint32
 }
 
 func GenerateRandomPopulation(size int32) population {
-	members := make([]genotype, size)
+	members := make([]genotypes.Genotype, size)
 	rand.Seed(int64(time.Now().Unix()))
 	for i := range members {
 		members[i] = generateRandomGenotype()
@@ -29,32 +25,25 @@ func GenerateRandomPopulation(size int32) population {
 	return population
 }
 
-func generateRandomGenotype() genotype {
-	chromosome := ""
-	for i := 0; i < genes.GENE_LENGTH*CHROMOSOME_LENGTH; i++ {
-		chromosome += strconv.Itoa(rand.Intn(2))
+func generateRandomGenotype() genotypes.Genotype {
+	chromosome := []genes.Gene{}
+	for i := 0; i < genotypes.ChromosomeLength; i++ {
+		gene := ""
+		for j := 0; j < genes.GeneLength; j++ {
+			gene += strconv.Itoa(rand.Intn(2))
+		}
+		chromosome = append(chromosome, genes.Gene{gene})
 	}
-	genotype := genotype{chromosome}
-	return genotype
+	return genotypes.Genotype{chromosome}
 }
 
 func PrintPopulation(population population) {
-	for i := range population.members {
-		print(population.members[i].chromosome, " : ")
-		printGenotype(population.members[i])
+	for _, genotype := range population.members {
+		print(genotype.ToEncodedString(), " : ")
+		print(genotype.ToDecodedString(), " : ")
+		print(genotype.ToFormula(), " : ")
+		println(parser.SolveExpression(genotype.ToFormula()))
 	}
-}
-
-func printGenotype(genotype genotype) {
-	for i := 0; i < CHROMOSOME_LENGTH*genes.GENE_LENGTH; i += genes.GENE_LENGTH {
-		printGene(genotype.chromosome[i : i+genes.GENE_LENGTH])
-		print(" ")
-	}
-	println()
-}
-
-func printGene(gene string) {
-	print(genes.GeneToValue(gene))
 }
 
 func main() {
