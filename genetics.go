@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -39,6 +40,7 @@ func generateRandomGenotype() genotypes.Genotype {
 }
 
 func PrintPopulation(population population) {
+	fmt.Printf("Generation %d\n", population.generations)
 	for _, genotype := range population.members {
 		print(genotype.ToEncodedString(), " : ")
 		print(genotype.ToDecodedString(), " : ")
@@ -51,6 +53,7 @@ func main() {
 	target, _ := strconv.Atoi(os.Args[1])
 	pop := GenerateRandomPopulation(50)
 	for pop.generations < 100 {
+		PrintPopulation(pop)
 		for _, genotype := range pop.members {
 			if parser.SolveExpression(genotype.ToFormula()) == target {
 				println(genotype.ToFormula())
@@ -58,15 +61,17 @@ func main() {
 			}
 		}
 		pop = evolvePopulation(target, &pop)
-		PrintPopulation(pop)
 	}
 }
 
 func evolvePopulation(target int, currentPopulation *population) population {
+	println("Evolving...")
 	members := []genotypes.Genotype{}
 	for i := 0; i < 25; i++ {
 		genotype1, genotype2 := selectFittest(target, currentPopulation)
 		genotype1, genotype2 = applyCrossover(genotype1, genotype2)
+		genotype1 = mutate(genotype1)
+		genotype2 = mutate(genotype2)
 		members = append(members, genotype1)
 		members = append(members, genotype2)
 	}
@@ -98,8 +103,60 @@ func determineFitness(target int, genotype genotypes.Genotype) float64 {
 
 func applyCrossover(genotype1 genotypes.Genotype, genotype2 genotypes.Genotype) (genotypes.Genotype, genotypes.Genotype) {
 	crossoverRate := float64(0.7)
-	crossover := rand.Intn(101) >= int(crossoverRate*100)
+	crossover := rand.Intn(101) <= int(crossoverRate*100)
 	if crossover {
-
+		println("Applying crossover!")
+		crossoverAt := rand.Intn(genotypes.ChromosomeLength * genes.GeneLength)
+		fmt.Printf("Crossover at position %d\n", crossoverAt)
+		println(genotype1.ToEncodedString())
+		println(genotype2.ToEncodedString())
+		geneSkips := int(crossoverAt / genes.GeneLength)
+		if crossoverAt%genes.GeneLength != 0 {
+			bitSkips := crossoverAt % genes.GeneLength
+			firstCrossoverGene1 := genotype1.Chromosome[geneSkips].EncodedString
+			firstCrossoverGene2 := genotype2.Chromosome[geneSkips].EncodedString
+			var temp1, temp2 string
+			for i := 0; i < bitSkips; i++ {
+				temp1 += string(firstCrossoverGene1[i])
+				temp2 += string(firstCrossoverGene2[i])
+			}
+			for i := bitSkips; i < genes.GeneLength; i++ {
+				temp1 += string(firstCrossoverGene2[i])
+				temp2 += string(firstCrossoverGene1[i])
+			}
+			genotype1.Chromosome[geneSkips] = genes.Gene{temp1}
+			genotype2.Chromosome[geneSkips] = genes.Gene{temp2}
+			geneSkips++
+		}
+		for i := geneSkips; i < genotypes.ChromosomeLength; i++ {
+			temp := genotype1.Chromosome[i]
+			genotype1.Chromosome[i] = genotype2.Chromosome[i]
+			genotype2.Chromosome[i] = temp
+		}
+		println(genotype1.ToEncodedString())
+		println(genotype2.ToEncodedString())
 	}
+	return genotype1, genotype2
+}
+
+func mutate(genotype genotypes.Genotype) genotypes.Genotype {
+	mutationRate := float64(0.001)
+	for _, gene := range genotype.Chromosome {
+		var temp string
+		for _, bit := range gene.EncodedString {
+			mutate := rand.Intn(1001) <= int(mutationRate*1000)
+			if mutate {
+				println("Mutation occured")
+				if string(bit) == "0" {
+					temp += "1"
+				} else {
+					temp += "0"
+				}
+			} else {
+				temp += string(bit)
+			}
+		}
+		gene.EncodedString = temp
+	}
+	return genotype
 }
