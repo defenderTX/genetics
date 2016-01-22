@@ -63,8 +63,8 @@ func EvolvePopulation(currentPopulation Population,
 	for i := 0; i < len(currentPopulation.members)/2; i++ {
 		genotype1, genotype2 := selectFittest(target, currentPopulation)
 		genotype1, genotype2 = applyCrossover(genotype1, genotype2)
-		genotype1 = genotype1.Mutate(float64(0.001))
-		genotype2 = genotype2.Mutate(float64(0.001))
+		genotype1 = mutate(genotype1)
+		genotype2 = mutate(genotype2)
 		members = append(members, genotype1)
 		members = append(members, genotype2)
 	}
@@ -121,4 +121,25 @@ func applyCrossover(genotype1 genotypes.Genotype, genotype2 genotypes.Genotype) 
 		}
 	}
 	return genotype1, genotype2
+}
+
+func mutate(genotype genotypes.Genotype) genotypes.Genotype {
+	mutationRate := float64(0.001)
+	for _, gene := range genotype.Chromosome {
+		var temp string
+		for _, bit := range gene.EncodedString {
+			mutate := rand.Intn(1001) <= int(mutationRate*1000)
+			if mutate {
+				if string(bit) == "0" {
+					temp += "1"
+				} else {
+					temp += "0"
+				}
+			} else {
+				temp += string(bit)
+			}
+		}
+		gene.EncodedString = temp
+	}
+	return genotype
 }

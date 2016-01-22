@@ -36,3 +36,15 @@ func TestToFormulaAllNumerics(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMutate(t *testing.T) {
+	allFives := Genotype{[]genes.Gene{}}
+	allPluses := Genotype{[]genes.Gene{}}
+	for len(allFives.Chromosome) != ChromosomeLength {
+		allFives.Chromosome = append(allFives.Chromosome, five)
+		allPluses.Chromosome = append(allPluses.Chromosome, plus)
+	}
+	if allFives.Mutate(float64(1.000)).ToEncodedString() != allPluses.ToEncodedString() {
+		t.Fail()
+	}
+}
