@@ -1,6 +1,7 @@
 package genotypes
 
 import (
+	"math/rand"
 	"strings"
 
 	"github.com/defendertx/genetics/genes"
@@ -54,6 +55,29 @@ func (genotype Genotype) ToFormula() string {
 		}
 	}
 	return strings.TrimSpace(formulaString)
+}
+
+// Mutate the Genotype by iterating over all bits of the EncodedString and
+// randomly flipping bits according to the mutationRate.
+func (genotype Genotype) Mutate(mutationRate float64) Genotype {
+	mutatedGenotype := Genotype{[]genes.Gene{}}
+	for _, gene := range genotype.Chromosome {
+		var temp string
+		for _, bit := range gene.EncodedString {
+			mutate := rand.Intn(1000) <= int(mutationRate*1000)
+			if mutate {
+				if string(bit) == "0" {
+					temp += "1"
+				} else {
+					temp += "0"
+				}
+			} else {
+				temp += string(bit)
+			}
+		}
+		mutatedGenotype.Chromosome = append(mutatedGenotype.Chromosome, genes.Gene{temp})
+	}
+	return mutatedGenotype
 }
 
 // Determines if the gene slice contains a numeric decoded value
