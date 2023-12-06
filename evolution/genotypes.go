@@ -1,10 +1,8 @@
-package genotypes
+package evolution
 
 import (
 	"math/rand"
 	"strings"
-
-	"github.com/defendertx/genetics/genes"
 )
 
 const (
@@ -15,14 +13,14 @@ const (
 // Genotype contains a Chromosome - a list of genes that make up a potential
 // solution to a problem
 type Genotype struct {
-	Chromosome []genes.Gene
+	Chromosome []StringGene
 }
 
 // ToEncodedString converts the Genotype to an encoded string of bits
 func (genotype Genotype) ToEncodedString() string {
 	encodedString := ""
 	for _, gene := range genotype.Chromosome {
-		encodedString += gene.EncodedString
+		encodedString += gene.Encoded
 	}
 	return encodedString
 }
@@ -31,7 +29,7 @@ func (genotype Genotype) ToEncodedString() string {
 func (genotype Genotype) ToDecodedString() string {
 	decodedString := ""
 	for _, gene := range genotype.Chromosome {
-		decodedString += gene.ToDecodedValue()
+		decodedString += gene.Decode()
 		decodedString += " "
 	}
 	return decodedString
@@ -44,13 +42,13 @@ func (genotype Genotype) ToFormula() string {
 	previousNumeric := false
 	for index, gene := range genotype.Chromosome {
 		if !previousNumeric && gene.IsNumeric() {
-			formulaString += gene.ToDecodedValue() + " "
+			formulaString += gene.Decode() + " "
 			previousNumeric = true
 		}
 		if previousNumeric && gene.IsOperator() &&
 			index < len(genotype.Chromosome)-1 &&
 			containsNumeric(genotype.Chromosome[index:]) {
-			formulaString += gene.ToDecodedValue() + " "
+			formulaString += gene.Decode() + " "
 			previousNumeric = false
 		}
 	}
@@ -60,10 +58,10 @@ func (genotype Genotype) ToFormula() string {
 // Mutate the Genotype by iterating over all bits of the EncodedString and
 // randomly flipping bits according to the mutationRate.
 func (genotype Genotype) Mutate(mutationRate float64) Genotype {
-	mutatedGenotype := Genotype{[]genes.Gene{}}
+	mutatedGenotype := Genotype{[]StringGene{}}
 	for _, gene := range genotype.Chromosome {
 		var temp string
-		for _, bit := range gene.EncodedString {
+		for _, bit := range gene.Encoded {
 			mutate := rand.Intn(1000) <= int(mutationRate*1000)
 			if mutate {
 				if string(bit) == "0" {
@@ -75,13 +73,13 @@ func (genotype Genotype) Mutate(mutationRate float64) Genotype {
 				temp += string(bit)
 			}
 		}
-		mutatedGenotype.Chromosome = append(mutatedGenotype.Chromosome, genes.Gene{temp})
+		mutatedGenotype.Chromosome = append(mutatedGenotype.Chromosome, StringGene{temp})
 	}
 	return mutatedGenotype
 }
 
 // Determines if the gene slice contains a numeric decoded value
-func containsNumeric(genes []genes.Gene) bool {
+func containsNumeric(genes []StringGene) bool {
 	for _, gene := range genes {
 		if gene.IsNumeric() {
 			return true
