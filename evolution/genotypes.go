@@ -1,26 +1,47 @@
 package evolution
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 )
 
 const (
-	// ChromosomeLength is the number of Genes contained in each Chromosome
-	ChromosomeLength = 9
+	ChromosomeLength = 9 // ChromosomeLength is the number of Genes contained in each Chromosome.
+)
+
+type (
+	// GeneDecoder defines necessary functions for decoding a Gene.
+	GeneDecoder interface {
+		fmt.Stringer
+		Decode() string
+		IsNumeric() bool
+		IsOperator() bool
+	}
+
+	// GeneMutator defines necessary functions for mutating a Gene.
+	GeneMutator interface {
+		Mutate(r float64)
+	}
+
+	// GeneDecoderMutator defines necessary functions for decoding and mutating a Gene.
+	GeneDecoderMutator interface {
+		GeneDecoder
+		GeneMutator
+	}
 )
 
 // Genotype contains a Chromosome - a list of genes that make up a potential
-// solution to a problem
+// solution to a problem.
 type Genotype struct {
-	Chromosome []StringGene
+	Chromosome [ChromosomeLength]GeneDecoderMutator
 }
 
 // ToEncodedString converts the Genotype to an encoded string of bits
 func (genotype Genotype) ToEncodedString() string {
 	encodedString := ""
 	for _, gene := range genotype.Chromosome {
-		encodedString += gene.Encoded
+		encodedString += gene.String()
 	}
 	return encodedString
 }
