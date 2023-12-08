@@ -1,8 +1,10 @@
 package evolution
 
 import (
+	"math/rand"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -73,6 +75,25 @@ func (g *StringGene) String() string {
 	return g.Encoded
 }
 
+// Mutate the StringGene by iterating over the string "bits" and randomly inverting them
+// according to the given rate.
+func (g *StringGene) Mutate(r float64) {
+	var sb strings.Builder
+	for _, bit := range g.Encoded {
+		mutate := rand.Intn(1000) <= int(r*1000)
+		if mutate {
+			if string(bit) == "0" {
+				sb.WriteString("1")
+			} else {
+				sb.WriteString("0")
+			}
+		} else {
+			sb.WriteRune(bit)
+		}
+	}
+	g.Encoded = sb.String()
+}
+
 // NewByteGene initializes and returns a new ByteGene from a byte.
 func NewByteGene(b byte) *ByteGene {
 	return &ByteGene{
@@ -112,4 +133,20 @@ func (g *ByteGene) IsOperator() bool {
 // String implementation of the Stringer interface for ByteGene.
 func (g *ByteGene) String() string {
 	return fmt.Sprintf("%04b", g.Encoded)
+}
+
+// Mutate the ByteGene by creating a bitmask and applying it to the encoded byte
+// with an XOR operation.
+func (g *ByteGene) Mutate(r float64) {
+	var sb strings.Builder
+	for i:= 0; i < 3; i++ {
+		mutate := rand.Intn(1000) <= int(r*1000)
+		if mutate {
+			sb.WriteString("1")
+		} else {
+			sb.WriteString("0")
+		}
+	}
+	mask, _ := strconv.ParseInt(sb.String(), 2, 32)
+	g.Encoded = g.Encoded ^ byte(mask)
 }

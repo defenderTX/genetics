@@ -5,6 +5,7 @@ package evolution
 // )
 
 // func TestToFormulaNoNumerics(t *testing.T) {
+
 // 	noNumerics := Genotype{[]StringGene{plus, minus, multiply, divide, plus, minus}}
 // 	if noNumerics.ToFormula() != "" {
 // 		t.Fail()

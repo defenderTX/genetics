@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand"
 	"strings"
 )
 
@@ -37,70 +36,64 @@ type Genotype struct {
 	Chromosome [ChromosomeLength]GeneDecoderMutator
 }
 
-// ToEncodedString converts the Genotype to an encoded string of bits
-func (genotype Genotype) ToEncodedString() string {
-	encodedString := ""
-	for _, gene := range genotype.Chromosome {
-		encodedString += gene.String()
+// ToEncodedString converts the Genotype to an encoded string of bits.
+func (g *Genotype) ToEncodedString() string {
+	var sb strings.Builder
+	for _, gene := range g.Chromosome {
+		sb.WriteString(gene.String())
 	}
-	return encodedString
+	return sb.String()
 }
 
-// ToDecodedString converts the Genotype to a decoded string of values
-func (genotype Genotype) ToDecodedString() string {
-	decodedString := ""
-	for _, gene := range genotype.Chromosome {
-		decodedString += gene.Decode()
-		decodedString += " "
+// ToDecodedString converts the Genotype to a decoded string of values.
+func (g *Genotype) ToDecodedString() string {
+	var sb strings.Builder
+	for _, gene := range g.Chromosome {
+		sb.WriteString(gene.Decode())
+		sb.WriteString(" ")
 	}
-	return decodedString
+	return sb.String()
 }
 
 // ToFormula converts the Genotype to a proper formula after discarding
-// nonsensical data
-func (genotype Genotype) ToFormula() string {
-	formulaString := ""
-	previousNumeric := false
-	for index, gene := range genotype.Chromosome {
-		if !previousNumeric && gene.IsNumeric() {
-			formulaString += gene.Decode() + " "
-			previousNumeric = true
-		}
-		if previousNumeric && gene.IsOperator() &&
-			index < len(genotype.Chromosome)-1 &&
-			containsNumeric(genotype.Chromosome[index:]) {
-			formulaString += gene.Decode() + " "
-			previousNumeric = false
+// nonsensical data.
+func (g *Genotype) ToFormula() string {
+	var sb strings.Builder
+	haveNumeric := false
+	for i, gene := range g.Chromosome {
+		if haveNumeric {
+			if gene.IsOperator() && i < ChromosomeLength-1 && containsNumeric(g.Chromosome[i:]) {
+				sb.WriteString(gene.Decode())
+				sb.WriteString(" ")
+				haveNumeric = false
+			}
+		} else {
+			if gene.IsNumeric() {
+				sb.WriteString(gene.Decode())
+				sb.WriteString(" ")
+				haveNumeric = true
+			}
 		}
 	}
-	return strings.TrimSpace(formulaString)
+	return strings.TrimSpace(sb.String())
 }
 
 // Mutate the Genotype by iterating over all bits of the EncodedString and
 // randomly flipping bits according to the mutationRate.
-func (genotype Genotype) Mutate(mutationRate float64) Genotype {
-	mutatedGenotype := Genotype{[]StringGene{}}
-	for _, gene := range genotype.Chromosome {
-		var temp string
-		for _, bit := range gene.Encoded {
-			mutate := rand.Intn(1000) <= int(mutationRate*1000)
-			if mutate {
-				if string(bit) == "0" {
-					temp += "1"
-				} else {
-					temp += "0"
-				}
-			} else {
-				temp += string(bit)
-			}
-		}
-		mutatedGenotype.Chromosome = append(mutatedGenotype.Chromosome, StringGene{temp})
+func (g *Genotype) Mutate(r float64) *Genotype {
+	for _, gene := range g.Chromosome {
+		gene.Mutate(r)
 	}
-	return mutatedGenotype
+	return g
+}
+
+// Crossover this Genotype with another Genotype to create two new Genotypes.
+func (g *Genotype) Crossover(other *Genotype) (*Genotype, *Genotype) {
+
 }
 
 // Determines if the gene slice contains a numeric decoded value
-func containsNumeric(genes []StringGene) bool {
+func containsNumeric(genes []GeneDecoderMutator) bool {
 	for _, gene := range genes {
 		if gene.IsNumeric() {
 			return true

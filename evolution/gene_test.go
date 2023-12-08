@@ -117,6 +117,12 @@ func TestStringGeneDecode(t *testing.T) {
 	}
 }
 
+func TestStringGeneMutate(t *testing.T) {
+	g := NewStringGeneFromByte(0x0)
+	g.Mutate(float64(1.0))
+	assert.NotEqual(t, "0", g.Decode(), "0x0 Mutate(1.0) -> !0")
+}
+
 func TestByteGeneIsNumeric(t *testing.T) {
 	for i := byte(0x0); i < 0xA; i++ {
 		g := NewByteGene(i)
