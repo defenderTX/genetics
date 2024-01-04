@@ -19,6 +19,7 @@ func main() {
 			os.Exit(0)
 		}
 		pop = evolution.EvolvePopulation(pop, target, float64(0.7), float64(0.001))
+		fmt.Println(pop)
 	}
 	println("Solution not found in 10000 generations")
 }

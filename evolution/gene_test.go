@@ -123,6 +123,32 @@ func TestStringGeneMutate(t *testing.T) {
 	assert.NotEqual(t, "0", g.Decode(), "0x0 Mutate(1.0) -> !0")
 }
 
+func TestStringGeneCrossover(t *testing.T) {
+	cases := []struct {
+		g1 *StringGene
+		g2 *StringGene
+		i  int
+		e  string
+	} {
+		{
+			g1: NewStringGene("0000"),
+			g2: NewStringGene("1111"),
+			i: 1,
+			e: "0111",
+		},
+		{
+			g1: NewStringGene("1111"),
+			g2: NewStringGene("0000"),
+			i: 3,
+			e: "1110",
+		},
+	}
+	for _, c := range cases {
+		g := c.g1.Crossover(c.g2, c.i)
+		assert.Equal(t, c.e, g.String(), fmt.Sprintf("%s Crossover(%s, %d) -> %s", c.g1, c.g2, c.i, c.e))
+	}
+}
+
 func TestByteGeneIsNumeric(t *testing.T) {
 	for i := byte(0x0); i < 0xA; i++ {
 		g := NewByteGene(i)

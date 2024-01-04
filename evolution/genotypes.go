@@ -30,14 +30,14 @@ type (
 	}
 )
 
-// Genotype contains a Chromosome - a list of genes that make up a potential
+// StringGenotype contains a Chromosome made up of StringGenes - a list of genes that make up a potential
 // solution to a problem.
-type Genotype struct {
-	Chromosome [ChromosomeLength]GeneDecoderMutator
+type StringGenotype struct {
+	Chromosome [ChromosomeLength]*StringGene
 }
 
-// ToEncodedString converts the Genotype to an encoded string of bits.
-func (g *Genotype) ToEncodedString() string {
+// String converts the Genotype to an encoded string of bits.
+func (g *StringGenotype) String() string {
 	var sb strings.Builder
 	for _, gene := range g.Chromosome {
 		sb.WriteString(gene.String())
@@ -46,7 +46,7 @@ func (g *Genotype) ToEncodedString() string {
 }
 
 // ToDecodedString converts the Genotype to a decoded string of values.
-func (g *Genotype) ToDecodedString() string {
+func (g *StringGenotype) Decoded() string {
 	var sb strings.Builder
 	for _, gene := range g.Chromosome {
 		sb.WriteString(gene.Decode())
@@ -57,12 +57,12 @@ func (g *Genotype) ToDecodedString() string {
 
 // ToFormula converts the Genotype to a proper formula after discarding
 // nonsensical data.
-func (g *Genotype) ToFormula() string {
+func (g *StringGenotype) ToFormula() string {
 	var sb strings.Builder
 	haveNumeric := false
 	for i, gene := range g.Chromosome {
 		if haveNumeric {
-			if gene.IsOperator() && i < ChromosomeLength-1 && containsNumeric(g.Chromosome[i:]) {
+			if gene.IsOperator() && i < ChromosomeLength-1 && g.containsNumeric(g.Chromosome[i:]) {
 				sb.WriteString(gene.Decode())
 				sb.WriteString(" ")
 				haveNumeric = false
@@ -80,20 +80,38 @@ func (g *Genotype) ToFormula() string {
 
 // Mutate the Genotype by iterating over all bits of the EncodedString and
 // randomly flipping bits according to the mutationRate.
-func (g *Genotype) Mutate(r float64) *Genotype {
+func (g *StringGenotype) Mutate(r float64) *StringGenotype {
 	for _, gene := range g.Chromosome {
 		gene.Mutate(r)
 	}
 	return g
 }
 
-// Crossover this Genotype with another Genotype to create two new Genotypes.
-func (g *Genotype) Crossover(other *Genotype) (*Genotype, *Genotype) {
-
+// Crossover this Genotype with another Genotype at the provided index to create a new Genotype.
+func (g *StringGenotype) Crossover(o *StringGenotype, i int) *StringGenotype {
+	child := &StringGenotype{}
+	geneSkips := int(i / GeneLength)
+	for i := 0; i < geneSkips; i++ {
+		// add partial chromosome that is unmodified
+		child.Chromosome[i] = g.Chromosome[i]
+	}
+	if i % GeneLength != 0 {
+		// handle mid-gene crossover
+		bitSkips := i % GeneLength
+		g1 := g.Chromosome[geneSkips]
+		g2 := o.Chromosome[geneSkips]
+		child.Chromosome[geneSkips] = g1.Crossover(g2, bitSkips)
+		geneSkips++
+	}
+	for i := geneSkips; i < ChromosomeLength; i++ {
+		// add partial chromosome for crossover
+		child.Chromosome[i] = o.Chromosome[i]
+	}
+	return child
 }
 
 // Determines if the gene slice contains a numeric decoded value
-func containsNumeric(genes []GeneDecoderMutator) bool {
+func (g *StringGenotype) containsNumeric(genes []*StringGene) bool {
 	for _, gene := range genes {
 		if gene.IsNumeric() {
 			return true

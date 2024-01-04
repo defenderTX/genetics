@@ -94,6 +94,15 @@ func (g *StringGene) Mutate(r float64) {
 	g.Encoded = sb.String()
 }
 
+// Crossover this StringGene with another StringGene at the provided index to create a new 
+// StringGene.
+func (g *StringGene) Crossover(o *StringGene, i int) *StringGene {
+	var sb strings.Builder
+	sb.WriteString(g.Encoded[:i])
+	sb.WriteString(o.Encoded[i:])
+	return &StringGene{sb.String()}
+}
+
 // NewByteGene initializes and returns a new ByteGene from a byte.
 func NewByteGene(b byte) *ByteGene {
 	return &ByteGene{
