@@ -2,6 +2,8 @@ package evolution
 
 import (
 	"fmt"
+	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +38,19 @@ type StringGenotype struct {
 	Chromosome [ChromosomeLength]*StringGene
 }
 
+// NewStringGenotype initializes and returns a new StringGenotype with random data.
+func NewStringGenotype() *StringGenotype {
+	chromosome := [ChromosomeLength]*StringGene{}
+	for i := 0; i < ChromosomeLength; i++ {
+		gene := ""
+		for j := 0; j < GeneLength; j++ {
+			gene += strconv.Itoa(rand.Intn(2))
+		}
+		chromosome[i] = &StringGene{gene}
+	}
+	return &StringGenotype{chromosome}
+}
+
 // String converts the Genotype to an encoded string of bits.
 func (g *StringGenotype) String() string {
 	var sb strings.Builder
@@ -55,9 +70,9 @@ func (g *StringGenotype) Decoded() string {
 	return sb.String()
 }
 
-// ToFormula converts the Genotype to a proper formula after discarding
+// Formula converts the Genotype to a proper formula after discarding
 // nonsensical data.
-func (g *StringGenotype) ToFormula() string {
+func (g *StringGenotype) Formula() string {
 	var sb strings.Builder
 	haveNumeric := false
 	for i, gene := range g.Chromosome {
@@ -95,7 +110,7 @@ func (g *StringGenotype) Crossover(o *StringGenotype, i int) *StringGenotype {
 		// add partial chromosome that is unmodified
 		child.Chromosome[i] = g.Chromosome[i]
 	}
-	if i % GeneLength != 0 {
+	if i%GeneLength != 0 {
 		// handle mid-gene crossover
 		bitSkips := i % GeneLength
 		g1 := g.Chromosome[geneSkips]

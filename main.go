@@ -3,23 +3,33 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/mwillfox/go-eq-gen/evolution"
+
+	"github.com/alecthomas/kong"
+)
+
+type (
+	CLI struct {
+		Target      int `arg:"" help:"Target number to solve for."`
+		Generations int `short:"g" default:"10000" help:"Number of generations to run."`
+		Size        int `short:"s" default:"100" help:"Size of the population."`
+	}
 )
 
 func main() {
-	target, _ := strconv.Atoi(os.Args[1])
-	pop := evolution.GenerateInitialPopulation(50)
-	for pop.Generations <= 10000 {
-		found, solution := pop.ContainsSolution(target)
-		if found {
+	cli := &CLI{}
+	_ = kong.Parse(cli)
+	pop := evolution.NewPopulation(cli.Size)
+	for pop.Generations < uint32(cli.Generations) {
+		s, ok := pop.Solution(cli.Target)
+		if ok {
 			fmt.Printf("Solution found in %d generations:\n", pop.Generations)
-			println(solution.ToFormula())
+			fmt.Println(s.Formula())
 			os.Exit(0)
 		}
-		pop = evolution.EvolvePopulation(pop, target, float64(0.7), float64(0.001))
-		fmt.Println(pop)
+		fmt.Printf("%d\t%s\n", pop.Generations, pop.Fittest(cli.Target).Formula())
+		pop.Evolve(cli.Target)
 	}
-	println("Solution not found in 10000 generations")
+	fmt.Printf("Solution not found in %d generations\n", pop.Generations)
 }
