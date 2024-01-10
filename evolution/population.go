@@ -6,31 +6,45 @@ import (
 	"strings"
 )
 
-// Population contains the members of a population and the age of the population
-// in generations.
-type Population struct {
-	members     []*StringGenotype                  // members of the population
-	fitFn       func(int, *StringGenotype) float64 // fitFn is the fitness function for the population
-	cR          float64                            // cR is the crossover rate for the population
-	mR          float64                            // mR is the mutation rate for the population
-	Generations uint32                             // Generations in the current population
-}
+type (
+	// Solver interface defines the necessary functions for solving the equation
+	// defined by a decoded genotype.
+	Solver interface {
+		Solve(string) (int, error)
+	}
+
+	// Population contains the members of a population and the age of the population
+	// in generations.
+	Population struct {
+		members     []*StringGenotype                  // members of the population
+		fitFn       func(int, *StringGenotype) float64 // fitFn is the fitness function for the population
+		cR          float64                            // cR is the crossover rate for the population
+		mR          float64                            // mR is the mutation rate for the population
+		Generations uint32                             // Generations in the current population
+		solver      Solver                             // Solver for solving genotype equations
+	}
+)
 
 // NewPopulation initializes and returns a new population with the given size
 // from random data.
-func NewPopulation(s int) *Population {
+func NewPopulation(size int, solver Solver) *Population {
 	members := []*StringGenotype{}
-	for i := 0; i < s; i++ {
+	for i := 0; i < size; i++ {
 		members = append(members, NewStringGenotype())
 	}
 	return &Population{
 		members: members,
 		fitFn: func(t int, g *StringGenotype) float64 {
-			return float64(1.0) / (float64(t) - float64(SolveExpression(g.Formula())))
+			s, err := solver.Solve(g.Formula())
+			if err != nil {
+				return float64(0.0)
+			}
+			return float64(1.0) / (float64(t) - float64(s))
 		},
 		cR:          float64(0.7),
 		mR:          float64(0.001),
 		Generations: 1,
+		solver:      solver,
 	}
 }
 
@@ -38,8 +52,9 @@ func NewPopulation(s int) *Population {
 // Returns the population members as a formatted string.
 func (p *Population) String() string {
 	var sb strings.Builder
-	for _, genotype := range p.members {
-		sb.WriteString(fmt.Sprintf("%s : %s : %d\n", genotype, genotype.Formula(), SolveExpression(genotype.Formula())))
+	for _, g := range p.members {
+		s, _ := p.solver.Solve(g.Formula())
+		sb.WriteString(fmt.Sprintf("%s : %s : %d\n", g, g.Formula(), s))
 	}
 	return sb.String()
 }
@@ -48,7 +63,8 @@ func (p *Population) String() string {
 // and a boolean indicating whether a solution was found.
 func (p *Population) Solution(t int) (*StringGenotype, bool) {
 	for _, g := range p.members {
-		if SolveExpression(g.Formula()) == t {
+		s, _ := p.solver.Solve(g.Formula())
+		if s == t {
 			return g, true
 		}
 	}

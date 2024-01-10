@@ -10,17 +10,19 @@ import (
 )
 
 type (
+	// CLI defines the command line arguments for the main entry point.
 	CLI struct {
-		Target      int `arg:"" help:"Target number to solve for."`
+		Target      int `arg:"" help:"Target number to generate an equation which solves to."`
 		Generations int `short:"g" default:"10000" help:"Number of generations to run."`
 		Size        int `short:"s" default:"100" help:"Size of the population."`
 	}
 )
 
+// main entry point for the application.
 func main() {
 	cli := &CLI{}
 	_ = kong.Parse(cli)
-	pop := evolution.NewPopulation(cli.Size)
+	pop := evolution.NewPopulation(cli.Size, evolution.NewASTSolver())
 	for pop.Generations < uint32(cli.Generations) {
 		s, ok := pop.Solution(cli.Target)
 		if ok {
