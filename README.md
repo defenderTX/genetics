@@ -1,5 +1,5 @@
 # go-eq-gen
-![test](https://github.com/github/docs/actions/workflows/test.yml/badge.svg?branch=main)
+[![test](https://github.com/github/docs/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/mwillfox/go-eq-gen/actions/workflows/test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mwillfox/go-eq-gen)](https://goreportcard.com/report/github.com/mwillfox/go-eq-gen)
 
 A golang demo which explores evolutionary algorithms to generate an equation which solves to a given integer.
