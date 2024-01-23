@@ -6,6 +6,8 @@
 A golang demo which explores evolutionary algorithms to generate an equation which 
 solves to a given integer.
 
+![Example](https://github.com/mwillfox/go-eq-gen/blob/main/doc/example.gif)
+
 ## Why?
 
 I originally started this project in 2015 to learn the go programming language and a 
