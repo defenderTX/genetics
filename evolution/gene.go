@@ -96,10 +96,10 @@ func (g *StringGene) Mutate(r float64) {
 
 // Crossover this StringGene with another StringGene at the provided index to create a new 
 // StringGene.
-func (g *StringGene) Crossover(o *StringGene, i int) *StringGene {
+func (g *StringGene) Crossover(o GeneDecoder, i int) GeneDecoder {
 	var sb strings.Builder
 	sb.WriteString(g.Encoded[:i])
-	sb.WriteString(o.Encoded[i:])
+	sb.WriteString(o.String()[i:])
 	return &StringGene{sb.String()}
 }
 
@@ -158,4 +158,30 @@ func (g *ByteGene) Mutate(r float64) {
 	}
 	mask, _ := strconv.ParseInt(sb.String(), 2, 32)
 	g.Encoded = g.Encoded ^ byte(mask)
+}
+
+// Crossover this ByteGene with another GeneDecoder at the provided index to create a new 
+// ByteGene.
+func (g *ByteGene) Crossover(o GeneDecoder, i int) GeneDecoder {
+	var ob *ByteGene
+	if i > GeneLength - 1 {
+		panic("Crossover index out of range")
+	}
+	switch v := o.(type) {
+	case *StringGene:
+		b, _ := strconv.ParseInt(v.String(), 2, 4)
+		ob = NewByteGene(byte(b))
+	case *ByteGene:
+		ob = v
+	}
+	// create new byte gene with bitwise operations
+	// 1. create a bitmask for o
+	// 2. create the crossover bits using the bitmask
+	// 3. calculate how many bits to shift this gene by in the crossover
+	// 4. shift this gene and apply the crossover bits 
+	mask := byte(0x0F) >> i
+	cBits := ob.Encoded & mask
+	shift := byte(i * -1 + 4)
+	n := (g.Encoded >> shift << shift) | (cBits)
+	return NewByteGene(n)
 }

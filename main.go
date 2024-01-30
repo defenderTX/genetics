@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/mwillfox/go-eq-gen/evolution"
@@ -43,7 +45,14 @@ func main() {
 	_ = kong.Parse(cli)
 	green := color.New(color.FgGreen)
 	red := color.New(color.FgRed)
-	pop := evolution.NewPopulation(cli.Size, evolution.NewASTSolver())
+	gc := func() evolution.GeneDecoder {
+		gene := ""
+		for j := 0; j < evolution.GeneLength; j++ {
+			gene += strconv.Itoa(rand.Intn(2))
+		}
+		return evolution.NewStringGene(gene)
+	}
+	pop := evolution.NewPopulation(cli.Size, evolution.NewASTSolver(), gc)
 	for pop.Generations <= uint32(cli.Generations) {
 		s, ok := pop.Solution(cli.Target)
 		if ok {
@@ -59,5 +68,5 @@ func main() {
 		}
 		pop.Evolve(cli.Target)
 	}
-	red.Printf("Solution not found in %d generations\n", pop.Generations - 1)
+	red.Printf("Solution not found in %d generations\n", pop.Generations-1)
 }

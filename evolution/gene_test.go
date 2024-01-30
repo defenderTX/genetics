@@ -2,6 +2,8 @@ package evolution
 
 import (
 	"fmt"
+	"math/rand"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -149,6 +151,97 @@ func TestStringGeneCrossover(t *testing.T) {
 	}
 }
 
+func TestByteGeneCrossover(t *testing.T) {
+	cases := []struct {
+		g1 *ByteGene
+		g2 *ByteGene
+		i  int
+		e  string
+		p  bool
+	} {
+		{
+			g1: NewByteGene(0),
+			g2: NewByteGene(15),
+			i: 4,
+			p: true,
+		},
+		{
+			g1: NewByteGene(0),
+			g2: NewByteGene(15),
+			i: 0,
+			e: "1111", // 15
+		},
+		{
+			g1: NewByteGene(0),
+			g2: NewByteGene(15),
+			i: 1,
+			e: "0111", // 7
+		},
+		{
+			g1: NewByteGene(0),
+			g2: NewByteGene(15),
+			i: 2,
+			e: "0011", // 3
+		},
+		{
+			g1: NewByteGene(0),
+			g2: NewByteGene(15),
+			i: 3,
+			e: "0001", // 1
+		},
+		{
+			g1: NewByteGene(1),
+			g2: NewByteGene(15),
+			i: 0,
+			e: "1111", // 15
+		},
+		{
+			g1: NewByteGene(1),
+			g2: NewByteGene(15),
+			i: 1,
+			e: "0111", // 7
+		},
+		{
+			g1: NewByteGene(1),
+			g2: NewByteGene(15),
+			i: 2,
+			e: "0011", // 3
+		},
+		{
+			g1: NewByteGene(1),
+			g2: NewByteGene(15),
+			i: 3,
+			e: "0001", // 1
+		},
+		{
+			g1: NewByteGene(2),
+			g2: NewByteGene(14),
+			i: 0,
+			e: "1110", // 14
+		},
+		{
+			g1: NewByteGene(2),
+			g2: NewByteGene(14),
+			i: 1,
+			e: "0110", // 6
+		},
+		{
+			g1: NewByteGene(2),
+			g2: NewByteGene(14),
+			i: 2,
+			e: "0010", // 2
+		},
+	}
+	for _, c := range cases {
+		if c.p {
+			assert.Panics(t, func() { c.g1.Crossover(c.g2, c.i) }, fmt.Sprintf("%s Crossover(%s, %d) -> panic", c.g1, c.g2, c.i))
+		} else {
+			g := c.g1.Crossover(c.g2, c.i)
+			assert.Equal(t, c.e, g.String(), fmt.Sprintf("%s Crossover(%s, %d) -> %s", c.g1, c.g2, c.i, c.e))
+		}
+	}
+}
+
 func TestByteGeneIsNumeric(t *testing.T) {
 	for i := byte(0x0); i < 0xA; i++ {
 		g := NewByteGene(i)
@@ -256,5 +349,39 @@ func TestByteGeneDecode(t *testing.T) {
 	for _, c := range cases {
 		g := NewByteGene(c.v)
 		assert.Equal(t, c.e, g.Decode(), c.msg)
+	}
+}
+
+func TestByteGeneMutate(t *testing.T) {
+	g := NewByteGene(0x0)
+	g.Mutate(float64(1.0))
+	assert.NotEqual(t, "0", g.Decode(), "0x0 Mutate(1.0) -> !0")
+}
+
+func BenchmarkStringGene(b *testing.B) {
+	gc := func() GeneDecoder {
+		gene := ""
+		for j := 0; j < GeneLength; j++ {
+			gene += strconv.Itoa(rand.Intn(2))
+		}
+		return NewStringGene(gene)
+	}
+	for i := 0; i < b.N; i++ {
+		pop := NewPopulation(100, NewASTSolver(), gc)
+		for pop.Generations < 1000 {
+			pop.Evolve(100000)
+		}
+	}
+}
+
+func BenchmarkByteGene(b *testing.B) {
+	gc := func() GeneDecoder {
+		return NewByteGene(byte(rand.Intn(16)))
+	}
+	for i := 0; i < b.N; i++ {
+		pop := NewPopulation(100, NewASTSolver(), gc)
+		for pop.Generations < 1000 {
+			pop.Evolve(100000)
+		}
 	}
 }

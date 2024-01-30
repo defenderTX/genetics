@@ -16,25 +16,28 @@ type (
 	// Population contains the members of a population and the age of the population
 	// in generations.
 	Population struct {
-		members     []*StringGenotype                  // members of the population
-		fitFn       func(int, *StringGenotype) float64 // fitFn is the fitness function for the population
-		cR          float64                            // cR is the crossover rate for the population
-		mR          float64                            // mR is the mutation rate for the population
-		Generations uint32                             // Generations in the current population
-		solver      Solver                             // Solver for solving genotype equations
+		members     []*Genotype                  // members of the population
+		fitFn       func(int, *Genotype) float64 // fitFn is the fitness function for the population
+		cR          float64                      // cR is the crossover rate for the population
+		mR          float64                      // mR is the mutation rate for the population
+		Generations uint32                       // Generations in the current population
+		solver      Solver                       // Solver for solving genotype equations
 	}
+
+	// GeneCreator is a function type that creates and returns a new random GeneDecoder.
+	GeneCreator func() GeneDecoder
 )
 
 // NewPopulation initializes and returns a new population with the given size
 // from random data.
-func NewPopulation(size int, solver Solver) *Population {
-	members := []*StringGenotype{}
+func NewPopulation(size int, solver Solver, gc GeneCreator) *Population {
+	members := []*Genotype{}
 	for i := 0; i < size; i++ {
-		members = append(members, NewStringGenotype())
+		members = append(members, NewGenotype(gc))
 	}
 	return &Population{
 		members: members,
-		fitFn: func(t int, g *StringGenotype) float64 {
+		fitFn: func(t int, g *Genotype) float64 {
 			s, err := solver.Solve(g.Formula())
 			if err != nil {
 				return float64(0.0)
@@ -61,7 +64,7 @@ func (p *Population) String() string {
 
 // Solution returns the first solution found in the population for the given target
 // and a boolean indicating whether a solution was found.
-func (p *Population) Solution(t int) (*StringGenotype, bool) {
+func (p *Population) Solution(t int) (*Genotype, bool) {
 	for _, g := range p.members {
 		s, _ := p.solver.Solve(g.Formula())
 		if s == t {
@@ -72,7 +75,7 @@ func (p *Population) Solution(t int) (*StringGenotype, bool) {
 }
 
 // Fittest returns the fittest member of the population for the given target.
-func (p *Population) Fittest(t int) *StringGenotype {
+func (p *Population) Fittest(t int) *Genotype {
 	fittest := p.members[0]
 	for _, g := range p.members {
 		if p.fitFn(t, g) > p.fitFn(t, fittest) {
@@ -85,7 +88,7 @@ func (p *Population) Fittest(t int) *StringGenotype {
 // Evolve evolves the population by applying selection, crossover, and mutation using the given
 // target, crossover rate, and mutation rate.
 func (p *Population) Evolve(t int) {
-	members := []*StringGenotype{}
+	members := []*Genotype{}
 	for i := 0; i < len(p.members)/2; i++ {
 		genotype1, genotype2 := p.selectFittest(t)
 		genotype1, genotype2 = p.crossover(genotype1, genotype2)
@@ -99,8 +102,8 @@ func (p *Population) Evolve(t int) {
 }
 
 // selectFittest returns the two fittest members of the population using roulette wheel selection.
-func (p *Population) selectFittest(t int) (*StringGenotype, *StringGenotype) {
-	rouletteWheel := []*StringGenotype{}
+func (p *Population) selectFittest(t int) (*Genotype, *Genotype) {
+	rouletteWheel := []*Genotype{}
 	for _, genotype := range p.members {
 		fitness := p.fitFn(t, genotype)
 		slices := int(fitness * 100)
@@ -121,7 +124,7 @@ func (p *Population) selectFittest(t int) (*StringGenotype, *StringGenotype) {
 }
 
 // crossover applies crossover to the given genotypes using the given crossover rate.
-func (p *Population) crossover(genotype1, genotype2 *StringGenotype) (*StringGenotype, *StringGenotype) {
+func (p *Population) crossover(genotype1, genotype2 *Genotype) (*Genotype, *Genotype) {
 	g1 := genotype1
 	g2 := genotype2
 	if rand.Intn(101) <= int(p.cR*100) {

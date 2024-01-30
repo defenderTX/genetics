@@ -9,33 +9,33 @@ import (
 
 func TestStringGenotypeCrossover(t *testing.T) {
 	cases := []struct {
-		g1 *StringGenotype
-		g2 *StringGenotype
+		g1 *Genotype
+		g2 *Genotype
 		i  int
 		e  string
 	}{
 		{
-			g1: &StringGenotype{[ChromosomeLength]*StringGene{
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
-				{"0000"},
+			g1: &Genotype{[ChromosomeLength]GeneDecoder{
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
+				&StringGene{"0000"},
 			}},
-			g2: &StringGenotype{[ChromosomeLength]*StringGene{
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
-				{"1111"},
+			g2: &Genotype{[ChromosomeLength]GeneDecoder{
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
+				&StringGene{"1111"},
 			}},
 			i: 14,
 			e: "000000000000001111111111111111111111",

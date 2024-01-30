@@ -2,8 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand"
-	"strconv"
 	"strings"
 )
 
@@ -18,41 +16,28 @@ type (
 		Decode() string
 		IsNumeric() bool
 		IsOperator() bool
-	}
-
-	// GeneMutator defines necessary functions for mutating a Gene.
-	GeneMutator interface {
 		Mutate(r float64)
-	}
-
-	// GeneDecoderMutator defines necessary functions for decoding and mutating a Gene.
-	GeneDecoderMutator interface {
-		GeneDecoder
-		GeneMutator
+		Crossover(o GeneDecoder, i int) GeneDecoder
 	}
 )
 
-// StringGenotype contains a Chromosome made up of StringGenes - a list of genes that make up a potential
+// Genotype contains a Chromosome made up of genes - a list of genes that make up a potential
 // solution to a problem.
-type StringGenotype struct {
-	Chromosome [ChromosomeLength]*StringGene
+type Genotype struct {
+	Chromosome [ChromosomeLength]GeneDecoder
 }
 
-// NewStringGenotype initializes and returns a new StringGenotype with random data.
-func NewStringGenotype() *StringGenotype {
-	chromosome := [ChromosomeLength]*StringGene{}
+// NewGenotype initializes and returns a new Genotype using the given gene creator.
+func NewGenotype(gc GeneCreator) *Genotype {
+	chromosome := [ChromosomeLength]GeneDecoder{}
 	for i := 0; i < ChromosomeLength; i++ {
-		gene := ""
-		for j := 0; j < GeneLength; j++ {
-			gene += strconv.Itoa(rand.Intn(2))
-		}
-		chromosome[i] = &StringGene{gene}
+		chromosome[i] = gc()
 	}
-	return &StringGenotype{chromosome}
+	return &Genotype{chromosome}
 }
 
 // String converts the Genotype to an encoded string of bits.
-func (g *StringGenotype) String() string {
+func (g *Genotype) String() string {
 	var sb strings.Builder
 	for _, gene := range g.Chromosome {
 		sb.WriteString(gene.String())
@@ -61,7 +46,7 @@ func (g *StringGenotype) String() string {
 }
 
 // ToDecodedString converts the Genotype to a decoded string of values.
-func (g *StringGenotype) Decoded() string {
+func (g *Genotype) Decoded() string {
 	var sb strings.Builder
 	for _, gene := range g.Chromosome {
 		sb.WriteString(gene.Decode())
@@ -72,7 +57,7 @@ func (g *StringGenotype) Decoded() string {
 
 // Formula converts the Genotype to a proper formula after discarding
 // nonsensical data.
-func (g *StringGenotype) Formula() string {
+func (g *Genotype) Formula() string {
 	var sb strings.Builder
 	haveNumeric := false
 	for i, gene := range g.Chromosome {
@@ -95,7 +80,7 @@ func (g *StringGenotype) Formula() string {
 
 // Mutate the Genotype by iterating over all bits of the EncodedString and
 // randomly flipping bits according to the mutationRate.
-func (g *StringGenotype) Mutate(r float64) *StringGenotype {
+func (g *Genotype) Mutate(r float64) *Genotype {
 	for _, gene := range g.Chromosome {
 		gene.Mutate(r)
 	}
@@ -103,8 +88,8 @@ func (g *StringGenotype) Mutate(r float64) *StringGenotype {
 }
 
 // Crossover this Genotype with another Genotype at the provided index to create a new Genotype.
-func (g *StringGenotype) Crossover(o *StringGenotype, i int) *StringGenotype {
-	child := &StringGenotype{}
+func (g *Genotype) Crossover(o *Genotype, i int) *Genotype {
+	child := &Genotype{}
 	geneSkips := int(i / GeneLength)
 	for i := 0; i < geneSkips; i++ {
 		// add partial chromosome that is unmodified
@@ -126,7 +111,7 @@ func (g *StringGenotype) Crossover(o *StringGenotype, i int) *StringGenotype {
 }
 
 // Determines if the gene slice contains a numeric decoded value
-func (g *StringGenotype) containsNumeric(genes []*StringGene) bool {
+func (g *Genotype) containsNumeric(genes []GeneDecoder) bool {
 	for _, gene := range genes {
 		if gene.IsNumeric() {
 			return true
